@@ -1,0 +1,15 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    Vim\Settings\:
+        resource: '../../*'
+        exclude: '../../{DependencyInjection}'
+
+    Vim\Settings\Controller\:
+        resource: '../../Controller'
+        tags: ['controller.service_arguments']
+
+    Vim\Settings\Service\SettingsCollection:
+        factory: ['@Vim\Settings\Factory\SettingsCollectionFactory', 'create']
