@@ -5,8 +5,7 @@ namespace Vim\Settings\Controller;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Vim\Settings\Entity\AbstractSettings;
-use Vim\Settings\Repository\SettingsRepository;
+use Vim\Settings\Dto\SettingInterface;
 use Vim\Settings\Service\SettingsCollection;
 use Vim\Settings\Service\SettingsServiceInterface;
 
@@ -14,30 +13,22 @@ class SettingsController
 {
     public function index(
         Request $request,
-        SettingsRepository $settingsRepository,
         SettingsServiceInterface $settingsService,
         SettingsCollection $settingsCollection
     ): JsonResponse
     {
         $filter = $request->get('filter', []);
-
-        $qb = $settingsRepository->createQueryBuilder('s');
-        if ($filterCode = $filter['code'] ?? null) {
-            $qb
-                ->andWhere('s.code LIKE :code')
-                ->setParameter('code', $filterCode . '%')
-            ;
-        }
+        $settings = isset($filter['code']) ? $settingsCollection->codeStartsWith($filter['code']) : $settingsCollection->all();
 
         return new JsonResponse([
             'data' => array_map(
-                static function (AbstractSettings $settingEntity) use ($settingsService, $settingsCollection) {
+                static function(SettingInterface $setting) use ($settingsService) {
                     return array_merge(
-                        $settingsCollection->one($settingEntity->getCode())->toArray(),
-                        ['value' => $settingsService->get($settingEntity->getCode())]
+                        $setting->toArray(),
+                        ['value' => $settingsService->get($setting->getCode())]
                     );
                 },
-                $qb->getQuery()->getResult()
+                $settings
             ),
         ]);
     }

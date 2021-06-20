@@ -53,11 +53,13 @@ class SettingsCollection
      */
     public function codeStartsWith(string $needle): array
     {
-        return array_filter(
-            $this->items,
-            static function (SettingInterface $setting) use ($needle) {
-                return str_starts_with($setting->getCode(), $needle);
-            },
+        return array_values(
+            array_filter(
+                $this->items,
+                static function (SettingInterface $setting) use ($needle) {
+                    return str_starts_with($setting->getCode(), $needle);
+                },
+            )
         );
     }
 }
