@@ -3,6 +3,10 @@ services:
         autowire: true
         autoconfigure: true
 
+    _instanceof:
+        Vim\Settings\Middleware\ConfigsMiddlewareInterface:
+            tags: ['settings.middleware.configs']
+
     Vim\Settings\:
         resource: '../../*'
         exclude: '../../{DependencyInjection}'
@@ -13,3 +17,7 @@ services:
 
     Vim\Settings\Service\SettingsCollection:
         factory: ['@Vim\Settings\Factory\SettingsCollectionFactory', 'create']
+
+    Vim\Settings\Middleware\ConfigsMiddlewareProcessor:
+        arguments:
+            - !tagged_iterator settings.middleware.configs

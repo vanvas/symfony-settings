@@ -3,62 +3,49 @@ declare(strict_types=1);
 
 namespace Vim\Settings\Controller;
 
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Vim\Settings\Entity\ArraySettings;
-use Vim\Settings\Entity\BooleanSettings;
-use Vim\Settings\Entity\ChoseSettings;
-use Vim\Settings\Entity\StringSettings;
-use Vim\Settings\Entity\TextSettings;
+use Vim\Settings\Entity\AbstractSettings;
 use Vim\Settings\Repository\SettingsRepository;
-use Vim\Settings\Service\SettingsService;
+use Vim\Settings\Service\SettingsCollection;
+use Vim\Settings\Service\SettingsServiceInterface;
 
 class SettingsController
 {
-    public function index(SettingsService $settingsService): JsonResponse
+    public function index(
+        Request $request,
+        SettingsRepository $settingsRepository,
+        SettingsServiceInterface $settingsService,
+        SettingsCollection $settingsCollection
+    ): JsonResponse
     {
+        $filter = $request->get('filter', []);
+
+        $qb = $settingsRepository->createQueryBuilder('s');
+        if ($filterCode = $filter['code'] ?? null) {
+            $qb
+                ->andWhere('s.code LIKE :code')
+                ->setParameter('code', $filterCode . '%')
+            ;
+        }
+
         return new JsonResponse([
-            'data' => $settingsService->getAll(),
+            'data' => array_map(
+                static function (AbstractSettings $settingEntity) use ($settingsService, $settingsCollection) {
+                    return array_merge(
+                        $settingsCollection->one($settingEntity->getCode())->toArray(),
+                        ['value' => $settingsService->get($settingEntity->getCode())]
+                    );
+                },
+                $qb->getQuery()->getResult()
+            ),
         ]);
     }
 
-    public function save(
-        Request $request,
-        SettingsService $settingsService,
-        SettingsRepository $settingsRepository,
-        EntityManagerInterface $em
-    ): JsonResponse {
+    public function save(Request $request, SettingsServiceInterface $settingsService): JsonResponse
+    {
         foreach (json_decode($request->getContent(), true)['data'] as $data) {
-            $settings = $settingsRepository->findOneByCode($data['code']);
-            if (null === $settings) {
-                switch ($data['type']) {
-                    case 'string':
-                        $settings = new StringSettings();
-                        break;
-                    case 'text':
-                        $settings = new TextSettings();
-                        break;
-                    case 'boolean':
-                        $settings = new BooleanSettings();
-                        break;
-                    case 'array':
-                        $settings = new ArraySettings();
-                        break;
-                    case 'choice':
-                        $settings = new ChoseSettings();
-                        break;
-                    default:
-                        throw new \LogicException('Not found mapper for "' . $data['string'] . '"');
-                }
-
-                $settings->setCode($data['code']);
-            }
-
-            $settings->setValue($data['value']);
-            $em->persist($settings);
-            $em->flush();
-            $settingsService->refreshCache($data['code']);
+            $settingsService->save($data['code'], $data['type'], $data['value']);
         }
 
         return new JsonResponse();

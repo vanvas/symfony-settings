@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 class BooleanSettings extends AbstractSettings
 {
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true)
      */
     private ?bool $value = null;
 
@@ -20,7 +20,7 @@ class BooleanSettings extends AbstractSettings
         return $this->value;
     }
 
-    public function setValue($value): void
+    public function setValue(bool $value): void
     {
         $this->value = $value;
     }

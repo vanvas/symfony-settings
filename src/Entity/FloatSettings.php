@@ -8,19 +8,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class StringSettings extends AbstractSettings
+class FloatSettings extends AbstractSettings
 {
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="float", nullable=true)
      */
-    private ?string $value = null;
+    private ?float $value = null;
 
-    public function getValue(): ?string
+    public function getValue(): ?float
     {
         return $this->value;
     }
 
-    public function setValue(?string $value): void
+    public function setValue(?float $value): void
     {
         $this->value = $value;
     }

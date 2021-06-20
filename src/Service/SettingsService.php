@@ -3,57 +3,72 @@ declare(strict_types=1);
 
 namespace Vim\Settings\Service;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Vim\Settings\Dto\SettingInterface;
+use Vim\Settings\Entity\ArraySettings;
+use Vim\Settings\Entity\BooleanSettings;
+use Vim\Settings\Entity\ChoseSettings;
+use Vim\Settings\Entity\FloatSettings;
+use Vim\Settings\Entity\IntegerSettings;
+use Vim\Settings\Entity\StringSettings;
+use Vim\Settings\Entity\TextSettings;
 use Vim\Settings\Repository\SettingsRepository;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 
-class SettingsService
+class SettingsService implements SettingsServiceInterface
 {
     public function __construct(
         private AdapterInterface $cache,
         private SettingsCollection $settingsCollection,
-        private SettingsRepository $settingsRepository
+        private SettingsRepository $settingsRepository,
+        private EntityManagerInterface $em
     )
     {
-    }
-
-    private function getWithoutCache(string $code): array|bool|float|int|string|null
-    {
-        $settings = $this->settingsRepository->findOneByCode($code);
-        if (null === $settings) {
-            $settings = $this->settingsCollection->one($code);
-
-            return $settings->getValue();
-        }
-
-        return $settings->getValue();
     }
 
     public function get(string $code): array|bool|float|int|string|null
     {
         $cacheItem = $this->cache->getItem($this->getCacheKey($code));
         if (!$cacheItem->isHit()) {
-            $this->cache->save($cacheItem->set($this->getWithoutCache($code)));
+            $setting = $this->settingsRepository->findOneByCode($code);
+            if (null === $setting) {
+                throw new \LogicException('Setting not found, code = "' . $code . '"');
+            }
+
+            $this->cache->save($cacheItem->set($setting->getValue()));
         }
 
         return $cacheItem->get();
     }
 
-    public function refreshCache(string $code): void
+    public function save(string $code, string $type, string|array|bool|float|int|null $value): void
     {
+        if (!$this->settingsCollection->one($code)) {
+            throw new \LogicException('The code "' . $code . '" not set in configuration');
+        }
+
+        $setting = $this->settingsRepository->findOneByCode($code);
+        if (null === $setting) {
+            $setting = match ($type) {
+                SettingInterface::TYPE_STRING => new StringSettings(),
+                SettingInterface::TYPE_TEXT => new TextSettings(),
+                SettingInterface::TYPE_INTEGER => new IntegerSettings(),
+                SettingInterface::TYPE_FLOAT => new FloatSettings(),
+                SettingInterface::TYPE_BOOLEAN => new BooleanSettings(),
+                SettingInterface::TYPE_ARRAY => new ArraySettings(),
+                SettingInterface::TYPE_CHOICE => new ChoseSettings(),
+                default => throw new \LogicException('Not found mapper for "' . $type . '"'),
+            };
+
+            $setting->setCode($code);
+        }
+
+        $setting->setValue($value);
+        $this->em->persist($setting);
+        $this->em->flush();
         $this->cache->deleteItem($this->getCacheKey($code));
         $this->get($code);
     }
-
-    public function getAll(): array
-    {
-        $result = [];
-        foreach ($this->settingsCollection->all() as $settings) {
-            $result[] = array_merge($settings->toArray(), ['value' => $this->get($settings->getCode())]);
-        }
-
-        return $result;
-    }
-
 
     private function getCacheKey(string $code): string
     {

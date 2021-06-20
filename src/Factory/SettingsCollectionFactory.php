@@ -3,12 +3,13 @@ declare(strict_types=1);
 
 namespace Vim\Settings\Factory;
 
-use Vim\Settings\Dto\Settings;
+use Vim\Settings\Dto\Setting;
+use Vim\Settings\Middleware\ConfigsMiddlewareProcessor;
 use Vim\Settings\Service\SettingsCollection;
 
 class SettingsCollectionFactory
 {
-    public function __construct(private array $config)
+    public function __construct(private array $config, private ConfigsMiddlewareProcessor $middlewareProcessor)
     {
     }
 
@@ -16,15 +17,11 @@ class SettingsCollectionFactory
     {
         $items = [];
         foreach ($this->config as $config) {
-            $items[] = new Settings(
-                $config['type'],
-                $config['code'],
-                $config['name'],
-                $config['value'],
-                $config['choiceList'] ?? []
-            );
+            $items[] = new Setting($config);
         }
 
-        return new SettingsCollection($items);
+        return new SettingsCollection(
+            $this->middlewareProcessor->process($items)
+        );
     }
 }

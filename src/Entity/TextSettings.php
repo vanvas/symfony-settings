@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 class TextSettings extends AbstractSettings
 {
     /**
-     * @ORM\Column(type="text")
+     * @ORM\Column(type="text", nullable=true)
      */
     private ?string $value = null;
 
@@ -20,7 +20,7 @@ class TextSettings extends AbstractSettings
         return $this->value;
     }
 
-    public function setValue($value): void
+    public function setValue(?string $value): void
     {
         $this->value = $value;
     }

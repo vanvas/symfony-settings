@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 class ArraySettings extends AbstractSettings
 {
     /**
-     * @ORM\Column(type="array")
+     * @ORM\Column(type="array", nullable=true)
      */
     private ?array $value = null;
 
@@ -20,7 +20,7 @@ class ArraySettings extends AbstractSettings
         return $this->value;
     }
 
-    public function setValue($value): void
+    public function setValue(array $value): void
     {
         $this->value = $value;
     }

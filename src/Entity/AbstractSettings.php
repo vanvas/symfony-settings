@@ -7,11 +7,12 @@ use Doctrine\ORM\Mapping as ORM;
 use Vim\Settings\Repository\SettingsRepository;
 
 /**
+ * @method setValue(string|array|bool|float|int|null $value)
  * @ORM\Table(name="settings", uniqueConstraints={@ORM\UniqueConstraint(columns={"code"})})
  * @ORM\Entity(repositoryClass=SettingsRepository::class)
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="type", type="string")
- * @ORM\DiscriminatorMap({"text" = "TextSettings", "string" = "StringSettings", "boolean" = "BooleanSettings", "array" = "ArraySettings", "chose" = "ChoseSettings"})
+ * @ORM\DiscriminatorMap({"text" = "TextSettings", "string" = "StringSettings", "boolean" = "BooleanSettings", "array" = "ArraySettings", "chose" = "ChoseSettings", "integer" = "IntegerSettings", "float" = "FloatSettings"})
  */
 abstract class AbstractSettings
 {
@@ -23,7 +24,7 @@ abstract class AbstractSettings
     private ?int $id = null;
 
     /**
-     * @ORM\Column(type="string", length=64, nullable=false, unique=true)
+     * @ORM\Column(type="string", length=255, nullable=false, unique=true)
      */
     private ?string $code = null;
 
@@ -42,13 +43,5 @@ abstract class AbstractSettings
         $this->code = $code;
     }
 
-    /**
-     * @return string|array|boolean
-     */
-    abstract public function getValue();
-
-    /**
-     * @param string|array|boolean $value
-     */
-    abstract public function setValue($value): void;
+    abstract public function getValue(): string|array|bool|float|int|null;
 }

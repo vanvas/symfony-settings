@@ -8,19 +8,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity
  */
-class StringSettings extends AbstractSettings
+class IntegerSettings extends AbstractSettings
 {
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="integer", nullable=true)
      */
-    private ?string $value = null;
+    private ?int $value = null;
 
-    public function getValue(): ?string
+    public function getValue(): ?int
     {
         return $this->value;
     }
 
-    public function setValue(?string $value): void
+    public function setValue(?int $value): void
     {
         $this->value = $value;
     }
