@@ -36,7 +36,7 @@ class SettingsController
     public function save(Request $request, SettingsServiceInterface $settingsService): JsonResponse
     {
         foreach (json_decode($request->getContent(), true)['data'] as $data) {
-            $settingsService->save($data['code'], $data['type'], $data['value']);
+            $settingsService->save($data['code'], $data['value']);
         }
 
         return new JsonResponse();
