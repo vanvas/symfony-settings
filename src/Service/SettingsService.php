@@ -41,15 +41,15 @@ class SettingsService implements SettingsServiceInterface
         return $cacheItem->get();
     }
 
-    public function save(string $code, string $type, string|array|bool|float|int|null $value): void
+    public function save(string $code, string|array|bool|float|int|null $value): void
     {
-        if (!$this->settingsCollection->one($code)) {
+        if (!($config = $this->settingsCollection->one($code))) {
             throw new \LogicException('The code "' . $code . '" not set in configuration');
         }
 
         $setting = $this->settingsRepository->findOneByCode($code);
         if (null === $setting) {
-            $setting = match ($type) {
+            $setting = match ($config->getType()) {
                 SettingInterface::TYPE_STRING => new StringSettings(),
                 SettingInterface::TYPE_TEXT => new TextSettings(),
                 SettingInterface::TYPE_INTEGER => new IntegerSettings(),
@@ -57,7 +57,7 @@ class SettingsService implements SettingsServiceInterface
                 SettingInterface::TYPE_BOOLEAN => new BooleanSettings(),
                 SettingInterface::TYPE_ARRAY => new ArraySettings(),
                 SettingInterface::TYPE_CHOICE => new ChoseSettings(),
-                default => throw new \LogicException('Not found mapper for "' . $type . '"'),
+                default => throw new \LogicException('Not found mapper for "' . $config->getType() . '"'),
             };
 
             $setting->setCode($code);

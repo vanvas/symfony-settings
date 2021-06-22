@@ -57,7 +57,6 @@ class SettingsSyncCommand extends Command
 
             $this->settingsService->save(
                 $settingConfig->getCode(),
-                $settingConfig->getType(),
                 $settingConfig->getValue(),
             );
         }

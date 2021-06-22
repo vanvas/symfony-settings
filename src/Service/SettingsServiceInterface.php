@@ -7,5 +7,5 @@ interface SettingsServiceInterface
 {
     public function get(string $code): array|bool|float|int|string|null;
 
-    public function save(string $code, string $type, string|array|bool|float|int|null $value): void;
+    public function save(string $code, string|array|bool|float|int|null $value): void;
 }
