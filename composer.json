@@ -1,6 +1,6 @@
 {
   "name": "vim/symfony-settings",
-  "version" : "2.0.4",
+  "version" : "2.0.5",
   "type": "symfony-bundle",
   "keywords": [
     "symfony-settings",

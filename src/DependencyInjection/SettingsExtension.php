@@ -27,6 +27,8 @@ class SettingsExtension extends Extension
             ->setArgument('$config', $config['settings'])
         ;
 
+        $container->setParameter('settings.configs', $config['settings']);
+
         $container
             ->getDefinition(SettingsService::class)
             ->setArgument('$cache', new Reference($config['pool']))
