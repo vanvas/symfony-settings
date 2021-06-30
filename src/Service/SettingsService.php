@@ -27,6 +27,11 @@ class SettingsService implements SettingsServiceInterface
     {
     }
 
+    /**
+     * @param string $code
+     * @return array|bool|float|int|string|null
+     * @throws SettingNotFoundException
+     */
     public function get(string $code): array|bool|float|int|string|null
     {
         $cacheItem = $this->cache->getItem($this->getCacheKey($code));
