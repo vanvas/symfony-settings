@@ -12,6 +12,7 @@ use Vim\Settings\Entity\FloatSettings;
 use Vim\Settings\Entity\IntegerSettings;
 use Vim\Settings\Entity\StringSettings;
 use Vim\Settings\Entity\TextSettings;
+use Vim\Settings\Exception\SettingNotFoundException;
 use Vim\Settings\Repository\SettingsRepository;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 
@@ -32,7 +33,7 @@ class SettingsService implements SettingsServiceInterface
         if (!$cacheItem->isHit()) {
             $setting = $this->settingsRepository->findOneByCode($code);
             if (null === $setting) {
-                throw new \LogicException('Setting not found, code = "' . $code . '"');
+                throw new SettingNotFoundException('Setting not found, code = "' . $code . '"');
             }
 
             $this->cache->save($cacheItem->set($setting->getValue()));
